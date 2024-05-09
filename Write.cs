@@ -11,8 +11,10 @@ class Write
 {
     public static bool ListToExcel(List<Supply> list,string writpath)
     {
+        
         bool result = false;
         IWorkbook workbook = new HSSFWorkbook();
+        Color color = new Color(workbook);
         ISheet sheet = workbook.CreateSheet("Sheet1");//创建一个名称为Sheet0的表;
         IRow row = sheet.CreateRow(0);//（第一行写标题)
 
@@ -26,6 +28,8 @@ class Write
         row.CreateCell(7).SetCellValue("成交量");
         row.CreateCell(8).SetCellValue("平仓盈亏(逐笔)");
         row.CreateCell(9).SetCellValue("手续费");
+        row.CreateCell(10).SetCellValue("净利润");
+        
         int count = list.Count;
 
         int max = 65535;//最大行数限制
@@ -46,22 +50,14 @@ class Write
                 if (list[i].ProfitandLoss.StartsWith('-'))
                 {
                     ICell cell1 = row.CreateCell(8);
-                    var cellstyle = workbook.CreateCellStyle();
-                    IFont font1 = workbook.CreateFont();
                     cell1.SetCellValue(list[i].ProfitandLoss);
-                    font1.Color = IndexedColors.Green.Index;
-                    cellstyle.SetFont(font1);
-                    cell1.CellStyle = cellstyle;
+                    cell1.CellStyle = color.ColorGreen();
                 }
                 else
                 {
                     ICell cell1 = row.CreateCell(8);
-                    var cellstyle = workbook.CreateCellStyle();
-                    IFont font1 = workbook.CreateFont();
                     cell1.SetCellValue(list[i].ProfitandLoss);
-                    font1.Color = IndexedColors.Red.Index;
-                    cellstyle.SetFont(font1);
-                    cell1.CellStyle = cellstyle;
+                    cell1.CellStyle = color.ColorRed();
                 }
 
                 row.CreateCell(9).SetCellValue(list[i].HandlingCharge);
@@ -81,59 +77,51 @@ class Write
             //qrow.CreateCell(8).SetCellValue(list[count].ProfitandLoss);
             if (list[count].ProfitandLoss.StartsWith('-'))
             {
-                ICell cell3 = qrow.CreateCell(8);
-                var cellstyle3 = workbook.CreateCellStyle();
-                IFont font3 = workbook.CreateFont();
-                cell3.SetCellValue(list[count].ProfitandLoss);
-                font3.Color = IndexedColors.Green.Index;
-                cellstyle3.FillForegroundColor = IndexedColors.Yellow.Index;
-                cellstyle3.FillPattern =FillPattern.SolidForeground;
-                cellstyle3.SetFont(font3);
-                cell3.CellStyle = cellstyle3;
+                ICell cell3 = qrow.CreateCell(8);;
+                cell3.SetCellValue(Convert.ToDouble(list[count].ProfitandLoss.ToString()));
+                cell3.CellStyle = color.GreenYellow();
             }
             else
             {
                 ICell cell3 = qrow.CreateCell(8);
-                var cellstyle3 = workbook.CreateCellStyle();
-                IFont font3 = workbook.CreateFont();
-                cell3.SetCellValue(list[count].ProfitandLoss);
-                font3.Color = IndexedColors.Red.Index;
-                cellstyle3.FillForegroundColor = IndexedColors.Yellow.Index;
-                cellstyle3.FillPattern = FillPattern.SolidForeground;
-                cellstyle3.SetFont(font3);
-                cell3.CellStyle = cellstyle3;
+              
+                cell3.SetCellValue(Convert.ToDouble(list[count].ProfitandLoss.ToString()));
+               
+                cell3.CellStyle = color.RedYellow();
             }
-            qrow.CreateCell(9).SetCellValue(list[count].HandlingCharge);
-            qrow.CreateCell(10).SetCellValue();
-            // ICell cell1 = qrow.CreateCell(0);//创建单元格
-            //ICell cell2 = row.CreateCell(count);
-            //cell1.SetCellValue("Null");//单元格内容
 
-            //var cellstyle1 = workbook.CreateCellStyle();//单元格样式
+            qrow.CreateCell(9).SetCellValue(list[count].HandlingCharge.ToString());
+                //净利润的计算
+            double b = Convert.ToDouble(qrow.GetCell(8).ToString());//盈亏
+            double c = Convert.ToDouble(qrow.GetCell(9).ToString());//手续费
+            //Console.WriteLine($"{b}  and {c}");
+            list[count].Netprofit = b - c;
+            if (list[count].Netprofit > 0)
+            {
+                ICell cell5 = qrow.CreateCell(10);
+                cell5.SetCellValue((double)list[count].Netprofit);
+               cell5.CellStyle = color.RedYellow();
+                
 
-            //cellstyle1.FillForegroundColor = IndexedColors.BrightGreen.Index;//颜色
-            //cellstyle1.FillPattern = FillPattern.SolidForeground;//填充颜色的方式
-            ////cell1.CellStyle = cellstyle1;//把样式赋值给单元格
-            //qrow.CreateCell(0).CellStyle = cellstyle1;
-            //// qrow.RowStyle = cellstyle1;
-            //// cell2.SetCellValue("");
-
-            var cellstyle2 = workbook.CreateCellStyle();
-
-            IFont font = workbook.CreateFont();//创建字体
-            font.Color = IndexedColors.Red.Index;//字体颜色
+            }
+            else 
+            {
+                ICell cell5 = qrow.CreateCell(10);
+                cell5.SetCellValue((double)list[count].Netprofit);
+                cell5.CellStyle = color.GreenYellow();
+                
+            }
+           
+           //成交量和手续费的字体颜色及单元格背景 
             ICell cell = qrow.CreateCell(7);
             cell.SetCellValue(list[count].Tradingvolume);
             ICell cell2 = qrow.CreateCell(9);
             cell2.SetCellValue((list[count].HandlingCharge));
-            cellstyle2.SetFont(font);//把字体赋给样式
-            cellstyle2.FillForegroundColor = IndexedColors.Yellow.Index;//单元格颜色
-            cellstyle2.FillPattern = FillPattern.SolidForeground;	// 填充方式
-            cell.CellStyle = cellstyle2;
-            cell2.CellStyle = cellstyle2;         
-            Console.WriteLine("华丽分割线");
+            cell.CellStyle = color.RedYellow();
+            cell2.CellStyle = color.RedYellow();         
+            //Console.WriteLine("================华丽分割线================");
             //文件写入的位置@"C:\Users\Administrator\Desktop\Max.xls"
-            using (FileStream fs = File.Create(writpath))
+            using (FileStream fs = File.OpenWrite(writpath))
             {
                 workbook.Write(fs);//向打开的这个xls文件中写入数据  
                 result = true;

@@ -13,9 +13,7 @@ namespace NPOIe
         public int TXnum { get; set; }
         public static void A1()
         {
-            Path1 path1 = new Path1();
-            path1.ReadPath = "n1";
-            path1.WritePath = "Max";
+            Path1 path1 = new Path1();;
             FileStream read = new FileStream(path1.ReadPath, FileMode.Open, FileAccess.Read);
             FileStream write = new FileStream(path1.WritePath, FileMode.OpenOrCreate, FileAccess.Write);
 

@@ -17,7 +17,7 @@ namespace NPOIe
         }
         public string WritePath
         {
-            get { return @"C:\Users\Administrator\Desktop\" + writePath_ + ".xls"; }
+            get { return @"C:\Users\Administrator\Desktop\"  + writePath_ + "Fin"+  ".xls"; }
             set { readPath_ = value; }
         }
         public Path1(string readpath,string writpath)

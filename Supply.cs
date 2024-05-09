@@ -15,6 +15,7 @@
 
         public string? ProfitandLoss { get; set; }//盈亏
         public double HandlingCharge { get; set; }//手续费
+        public double Netprofit { get; set; }//净利润
 
     }
 
